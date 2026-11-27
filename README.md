@@ -1,23 +1,21 @@
 <div align="center">
 
-# 🏠🌿 Indoor PM₂.₅ Prediction with Machine Learning
+# 🏠🌿 Indoor PM₂.₅ Forecasting with Machine Learning
 ### CHE1147 · Chemical Data Science and Engineering · University of Toronto
 **Team 4 · Fall 2026**
-
 
 ### 📰 Research Highlight
 
 Discover the key findings and potential impact of our CHE1147 project.
 
-**[Read Our Research Article: What Can Machine Learning Tell Us About the Air Inside Our Homes?](docs/RESEARCH_HIGHLIGHT.md)**
-
+**[Read Our Research Article: What Can Machine Learning Tell Us About the Air Inside Our Homes?](RESEARCH_HIGHLIGHT.md)**
 
 ![Python](https://img.shields.io/badge/Python-3.11-3572A5)
 ![Jupyter](https://img.shields.io/badge/Notebooks-Jupyter-F37626)
 ![Project](https://img.shields.io/badge/Study-Residential%20Air%20Quality-0E7490)
 ![Validation](https://img.shields.io/badge/Evaluation-Grouped%20by%20Home-7041A6)
 
-**[🔎 Overview](#-project-overview)** · **[🗂 Repository map](#-repository-map)** · **[🧪 Two experiments](#-two-modeling-workflows)** · **[📊 Results](#-second-model-results)** · **[⚙️ Setup](#%EF%B8%8F-setup--run)**
+**[🔎 Overview](#-project-overview)** · **[🗂 Repository map](#-repository-map)** · **[🧪 Modeling workflow](#-modeling-workflow)** · **[📊 Results](#-results)** · **[⚙️ Setup](#%EF%B8%8F-setup--run)**
 
 </div>
 
@@ -29,96 +27,78 @@ We explore whether supervised regression and gradient-boosted trees can predict 
 
 > **Research question:** Can machine-learning models improve next-interval indoor PM₂.₅ prediction when evaluated in residential buildings excluded from training?
 
-The repository now contains **two clearly separated workflows**: the original team code, retained without edits, and a **Second Model** folder holding the revised analysis, numerical results, figures, and an HTML summary.
+The repository contains the original team materials plus a cleaned modular pipeline, research highlight, and diagnostic plots. All original raw files are preserved unchanged.
 
 ## 🗂 Repository map
 
 | Location | What is inside? |
 |---|---|
-| 🧑‍💻 **[`main.ipynb`](main.ipynb)** | Original Jupyter notebook |
-| 🐍 **[`config.py`](config.py), [`pipeline.py`](pipeline.py)** | Python configuration and pipeline |
-| 🧩 **[`data_loader.py`](data_loader.py), [`feature_engineering.py`](feature_engineering.py)** | Loading and feature scripts |
-| 🧪 **[`cross_validation.py`](cross_validation.py), [`nested_cv.py`](nested_cv.py)** | Team cross-validation experiments |
-| 🎯 **[`tune_lightgbm.py`](tune_lightgbm.py), [`tune_xgboost.py`](tune_xgboost.py)** | Hyperparameter-tuning scripts |
-| 🗃️ **[`DATA/`](DATA/)** | **Original raw monitoring files* |
-| ✨ **[`Second_Model/`](Second_Model/)** | **Revised experiment** and its results |
-| 📓 **[Second Model executed notebook](Second_Model/Second_Model_Executed.ipynb)** | Saved outputs included |
-| 📈 **[Second Model HTML results](Second_Model/results_dashboard.html)** | Self-contained HTML dashboard — download and open locally |
-| 🖼️ **[`assets/figures/`](assets/figures/)** | Research figures shown on this README |
-| 📚 **[`docs/`](docs/)** | Data, validation, workflow comparison, and figure guide |
+| 📓 **[`Main_File.ipynb`](Main_File.ipynb)** | **Main entry-point notebook** (open this to run the analysis) |
+| 📰 **[`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md)** | Concise findings summary with tables and interpretation |
+| 📝 **[`decisions.md`](decisions.md)** | Justification of modeling choices (split, features, capping, metrics) |
+| 🐍 **[`Main Python Files/`](Main%20Python%20Files/)** | Modular pipeline scripts (`config.py`, `pipeline.py`, `data_loader.py`, `feature_engineering.py`, tuning scripts, etc.) |
+| 🗃️ **[`DATA/`](DATA/)** | Original raw monitoring files (preserved exactly) |
+| 🖼️ **[`plots/`](plots/)** or `assets/figures/` | Generated diagnostic figures |
+| 🚀 **[`START_HERE.md`](START_HERE.md)** | Clone / upload instructions for teammates |
 
 ### 🧭 Quick links
 
 | I want to… | Open |
 |---|---|
-| Run the **original team notebook** | [`main.ipynb`](main.ipynb) |
-| Examine the **second experiment** | [`Second_Model/README.md`](Second_Model/README.md) |
-| Review **executed notebook results** | [`Second_Model_Executed.ipynb`](Second_Model/Second_Model_Executed.ipynb) |
-| Download the **standalone HTML results** | [`results_dashboard.html`](Second_Model/results_dashboard.html) |
-| View **model metrics** | [`model_metrics.csv`](Second_Model/results/model_metrics.csv) |
-| Review **raw household monitoring data** | [`DATA/`](DATA/) |
-| Understand why the methods differ | [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) |
+| **Read the findings** (no code needed) | [`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md) |
+| Understand the modeling choices | [`decisions.md`](decisions.md) |
+| **Reproduce or modify the analysis** | [`Main_File.ipynb`](Main_File.ipynb) |
+| Review raw household monitoring data | [`DATA/`](DATA/) |
+| Get clone / setup instructions | [`START_HERE.md`](START_HERE.md) |
 
 ---
 
-## 🧪 Two modeling workflows
+## 🧪 Modeling workflow
 
-| | initial Exploration | ✨ Second Revised Model |
-|---|---|---|
-| Code entry | `main.ipynb` and root `.py` files | `Second_Model/Second_Model_Executed.ipynb` |
-| Split | Original seed 42 | 54 development / 14 held-out households; seed 2026 |
-| Features | Original medium selection | 35 selected predictors |
-| Tuning | Exploratory Optuna / cross-validation scripts | Five-fold grouped CV and randomized search |
-| Persistence benchmark | Not in original four-model comparison | Explicit baseline and selection benchmark |
-| Saved output | Original notebook | CSV metrics, figures, HTML results dashboard |
+The analysis is organized as a modular pipeline called from `Main_File.ipynb`:
 
+- **Split:** Household hold-out (homes excluded from training) to test generalization to unseen residences.
+- **Resolution:** 10-minute bins.
+- **Features:** Lagged indoor PM, outdoor PM, ventilation/ACH, temperature/humidity, time features, and household-level statistics.
+- **Models:** Persistence baseline, Linear Regression, Ridge, LightGBM, and XGBoost.
+- **Capping:** Indoor PM values above a chosen threshold (50 / 100 / 150 µg/m³) are clipped before modeling; the percentage of observations affected is reported in the research highlight.
+- **Evaluation:** MAE, RMSE, and R² on held-out households.
+
+You do **not** need to run any code simply to read the results. Open the research highlight and any committed figures.
 
 ---
 
-## 📌 Second Model — at a glance
+## 📌 Study size (approximate)
 
 | Study attribute | Value |
 |---|---:|
-| Source households | 70 |
-| Eligible households | **68** |
-| 10-minute observations | **62,794** |
-| Development / held-out households | **54 / 14** |
-| Development / held-out observations | **50,690 / 12,104** |
-| Predictors | **35** |
-| Evaluation | Five-fold grouped CV + household hold-out |
+| Source households | ~70 |
+| Eligible households after filtering | ~64–68 |
+| 10-minute observations | ~60k–70k |
+| Development / held-out split | Household-level hold-out |
+| Predictors | Reduced set (see `decisions.md`) |
+| Evaluation | Household hold-out + optional grouped CV |
 
-## 📊 Revised Model results
+Exact counts appear in the executed notebook and research highlight.
 
-**Held-out evaluation: 14 households, 12,104 target intervals.** MAE and RMSE are in µg/m³. ↓ = lower is better; ↑ = higher is better.
+## 📊 Results
 
-| Model | CV MAE ↓ | Test MAE ↓ | Test RMSE ↓ | Test R² ↑ |
-|:---|---:|---:|---:|---:|
-| **Persistence** | **0.5894** | **0.4173** | 2.6269 | 0.8712 |
-| Linear regression | 0.6946 | 0.5237 | 2.5918 | 0.8746 |
-| Ridge regression | 0.6946 | 0.5237 | 2.5918 | 0.8746 |
-| **LightGBM** | 0.6677 | 0.4832 | **2.4921** | **0.8840** |
-| XGBoost | 0.6858 | 0.4871 | 2.5373 | 0.8798 |
+Detailed metrics, capping comparisons, and interpretation are in **[`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md)**.
 
-**Interpretation:** Persistence achieved the lowest overall MAE, while LightGBM achieved the lowest RMSE and R². See the [HTML results dashboard](Second_Model/results_dashboard.html) and [Second Model documentation](Second_Model/README.md) for the experiment details.
+Typical pattern observed:
+- Persistence is a strong baseline at 10-minute resolution because of high temporal autocorrelation.
+- Gradient-boosted models (especially LightGBM) often improve RMSE and R² relative to linear models.
+- Capping extreme spikes reduces the influence of rare high-PM events; the fraction of points altered is small (see highlight for exact percentages).
 
-### 📉 Comparing models
+### Example figures (if present in `assets/figures/` or `plots/`)
 
-![Held-out model MAE and RMSE comparison](assets/figures/model_comparison.png)
-
-### 🌡️ Error by observed concentration
-
-![Concentration-stratified model MAE, two panels](assets/figures/errors_by_concentration.png)
-
-### 🔄 Temporal autocorrelation
-
-![Temporal autocorrelation for selected households](assets/figures/temporal_autocorrelation.png)
-
-### 🔬 More figures
-
-| Correlations and target | Feature importance |
+| Figure | Description |
 |---|---|
-| [Predictor correlation heatmap](assets/figures/correlation_heatmap.png) | [LightGBM importance](assets/figures/lightgbm_importance.png) |
-| [Indoor PM₂.₅ distribution](assets/figures/target_distribution.png) | [XGBoost importance](assets/figures/xgboost_importance.png) |
+| Model comparison | Held-out MAE / RMSE across models |
+| Errors by concentration | Performance stratified by observed PM level |
+| Temporal autocorrelation | Strength of dependence at different lags |
+| Feature importance | LightGBM / XGBoost top predictors |
+| Correlation heatmap | Relationships among selected features |
 
 ---
 
@@ -126,47 +106,40 @@ The repository now contains **two clearly separated workflows**: the original te
 
 ### 1. Obtain the repository
 
-Use GitHub Desktop to clone the repository, or run:
+Use GitHub Desktop to clone, or:
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/CHE1147-Indoor-PM25-ML.git
-cd CHE1147-Indoor-PM25-ML
+git clone https://github.com/YOUR_GITHUB_USERNAME/CHE1147-Indoor-PM25-Forecasting.git
+cd CHE1147-Indoor-PM25-Forecasting
 ```
-
-Replace `YOUR_GITHUB_USERNAME` with the account that owns your new test repository.
 
 ### 2. Install dependencies
 
-Use a dedicated Python 3.11 environment. For the Second Model:
-
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements-paper.in
 jupyter lab
 ```
 
-If XGBoost reports an OpenMP runtime issue on macOS, refer to the [XGBoost installation documentation](https://xgboost.readthedocs.io/en/stable/install.html).
+### 3. Run the analysis
 
-### 3. Locate the raw monitoring dataset
+Open and run **[`Main_File.ipynb`](Main_File.ipynb)**.  
+It is the single entry point; it loads data from `DATA/`, applies feature engineering, trains the models, and generates plots.
 
-The repository includes the team's original [`DATA/`](DATA/) folder. The full dataset is described by the [original Dryad record](https://doi.org/10.7941/D1ZS7X). Before making the repository public, verify permission to redistribute the research data.
-
-### 4. Run either workflow
-
-- **Original analysis:** open [`main.ipynb`](main.ipynb). The original [`config.py`](config.py) looks for a local `DATA/` folder.
-- **Second Model:** open [`Second_Model/Second_Model_Clean.ipynb`](Second_Model/Second_Model_Clean.ipynb). In the first setup cell, set `USER_DATA_ROOT` to the absolute path of this repository's `DATA` folder (or your own local data path).
-
-The **standalone HTML dashboard** shows the previously saved results without rerunning models. GitHub's source file preview does not display the HTML as a live web page; download and open it locally, or serve with GitHub Pages if permitted.
+To read results only, skip this step and open `RESEARCH_HIGHLIGHT.md`.
 
 ---
 
 ## 📖 Notes on interpretation
 
-The Second Model predicts **the next 10-minute interval**. The indoor PM₂.₅ target is capped at **100 µg/m³**. 
+- The models predict the **next 10-minute interval**.
+- Household hold-out is used so performance reflects generalization to unseen homes.
+- Extreme indoor PM values can be capped (thresholds and percentages of clipped observations are documented in the research highlight).
+- Persistence is included as a simple, strong baseline.
 
-More details: [Experiment guide](docs/EXPERIMENTS.md) · [Methodology guide](docs/METHODOLOGY.md) · [Figure guide](docs/FIGURES.md).
+More details: [`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md) · [`decisions.md`](decisions.md).
 
 ---
 

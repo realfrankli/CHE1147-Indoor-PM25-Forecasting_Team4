@@ -7,6 +7,16 @@
 - **Largest raw file:** 2.91 MiB
 - **Original root `.gitignore` SHA-256:** `4c10c2ca82dcacd6021430e80e2d1b4892689fd07d52b8190bedf979b5fede9a`
 
-No original file was modified, moved, or removed. **New files** include the root `README.md`, `START_HERE.md`, `PRESERVATION_AUDIT.md`, subfolder `.gitignore` overrides, `Second_Model/`, `assets/`, `docs/`, and plotting requirements/scripts.
+No original file was modified, moved, or removed.
 
-The exact same raw dataset as provided in the original ZIP is stored under `DATA/`. Any later changes made directly in GitHub would need a new audit.
+## New files added in this organized repository
+
+| Category | Files |
+|---|---|
+| Documentation | `README.md`, `START_HERE.md`, `RESEARCH_HIGHLIGHT.md`, `decisions.md`, `PRESERVATION_AUDIT.md` |
+| Modular pipeline | `Main Python Files/` (data loader, features, models, evaluation, run scripts) + `Main_File.ipynb` |
+| Requirements | `requirements-paper.in` |
+| Supporting | Subfolder `.gitignore` overrides, `assets/`, `docs/`, plotting scripts |
+
+The exact same raw dataset as provided in the original ZIP is stored under `DATA/`.  
+Any later changes made directly in GitHub would need a new audit.
