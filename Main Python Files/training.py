@@ -10,7 +10,8 @@ import optuna
 from lightgbm import LGBMRegressor
 from xgboost import XGBRegressor
 
-from .models import SEED, model_specs, _pipeline
+# Use absolute import so the file works both as a script and as a module
+from models import SEED, model_specs, _pipeline
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -25,7 +26,7 @@ def _group_cv_mae(estimator, X, y, folds):
     return float(np.mean(scores))
 
 
-def _tune_lightgbm(X, y, folds, n_trials=40):
+def _tune_lightgbm(X, y, folds, n_trials=10):
     """Optuna search for LightGBM. Returns best params and CV MAE."""
 
     def objective(trial):
@@ -53,7 +54,7 @@ def _tune_lightgbm(X, y, folds, n_trials=40):
     return study.best_params, study.best_value
 
 
-def _tune_xgboost(X, y, folds, n_trials=40):
+def _tune_xgboost(X, y, folds, n_trials=10):
     """Optuna search for XGBoost. Returns best params and CV MAE."""
 
     def objective(trial):
@@ -86,7 +87,7 @@ def _tune_xgboost(X, y, folds, n_trials=40):
     return study.best_params, study.best_value
 
 
-def select_models(development, columns, n_splits=5, n_trials=40):
+def select_models(development, columns, n_splits=5, n_trials=10):
     """Tune models on development homes using GroupKFold and return fitted estimators.
 
     Linear and Ridge use the grids in model_specs().
