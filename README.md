@@ -36,10 +36,25 @@ The repository contains the original team materials plus a cleaned modular pipel
 | 📓 **[`Main_File.ipynb`](Main_File.ipynb)** | **Main entry-point notebook** (open this to run the analysis) |
 | 📰 **[`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md)** | Concise findings summary with tables and interpretation |
 | 📝 **[`decisions.md`](decisions.md)** | Justification of modeling choices (split, features, capping, metrics) |
-| 🐍 **[`Main Python Files/`](Main%20Python%20Files/)** | Modular pipeline scripts (`config.py`, `pipeline.py`, `data_loader.py`, `feature_engineering.py`, tuning scripts, etc.) |
+| 🐍 **[`Main Python Files/`](Main%20Python%20Files/)** | Modular pipeline (see table below) |
 | 🗃️ **[`DATA/`](DATA/)** | Original raw monitoring files (preserved exactly) |
-| 🖼️ **[`plots/`](plots/)** or `assets/figures/` | Generated diagnostic figures |
+| 📊 **[`results/`](results/)** | Output tables and run metadata |
+| 🖼️ **Root `.png` files** | Generated diagnostic and poster figures |
+| 🗂️ **[`Older versions/`](Older%20versions/)** | Previous project versions and archived notebooks/HTML |
 | 🚀 **[`START_HERE.md`](START_HERE.md)** | Clone / upload instructions for teammates |
+| 📋 **[`PRESERVATION_AUDIT.md`](PRESERVATION_AUDIT.md)** | Audit of preserved original files |
+
+### Python modules (`Main Python Files/`)
+
+| File | Role |
+|---|---|
+| `data_loader.py` | Load household CSV/Excel files, extract household IDs, resample to 10-min bins |
+| `features.py` | Lag features, time features, household statistics |
+| `models.py` | Model definitions (Linear, Ridge, LightGBM, XGBoost) |
+| `training.py` | Training loops, household split, early stopping |
+| `evaluation.py` | Metrics (MAE, RMSE, R²) and residual diagnostics |
+| `plots.py` | Standard diagnostic plots |
+| `poster_figures.py` | Poster-ready figures (preprocessing, correlation, observed vs predicted) |
 
 ### 🧭 Quick links
 
@@ -49,6 +64,7 @@ The repository contains the original team materials plus a cleaned modular pipel
 | Understand the modeling choices | [`decisions.md`](decisions.md) |
 | **Reproduce or modify the analysis** | [`Main_File.ipynb`](Main_File.ipynb) |
 | Review raw household monitoring data | [`DATA/`](DATA/) |
+| See numerical results | [`results/`](results/) |
 | Get clone / setup instructions | [`START_HERE.md`](START_HERE.md) |
 
 ---
@@ -57,12 +73,30 @@ The repository contains the original team materials plus a cleaned modular pipel
 
 The analysis is organized as a modular pipeline called from `Main_File.ipynb`:
 
-- **Split:** Household hold-out (homes excluded from training) to test generalization to unseen residences.
-- **Resolution:** 10-minute bins.
-- **Features:** Lagged indoor PM, outdoor PM, ventilation/ACH, temperature/humidity, time features, and household-level statistics.
-- **Models:** Persistence baseline, Linear Regression, Ridge, LightGBM, and XGBoost.
-- **Capping:** Indoor PM values above a chosen threshold (50 / 100 / 150 µg/m³) are clipped before modeling; the percentage of observations affected is reported in the research highlight.
-- **Evaluation:** MAE, RMSE, and R² on held-out households.
+1. **Data loading**  
+   Recursive search of `DATA/` for household files. Household IDs are extracted from filenames. Files are loaded with encoding fallbacks and macOS metadata files are skipped.
+
+2. **Resampling**  
+   Minute-level data are aggregated into **10-minute bins**. Bins with fewer than 5 valid minutes are rejected. Extreme indoor PM values are capped (default 100 µg/m³).
+
+3. **Feature engineering**  
+   - Lagged indoor PM (`indoor_pm_age0m`, `age10m`, `age20m`, …)  
+   - Outdoor PM, ACH, airflow rates (exhaust, supply, infiltration, total)  
+   - Indoor/outdoor temperature and relative humidity  
+   - Cyclical time features (hour sin/cos) and weekend indicator  
+   - Household-level mean PM (computed on training homes only)
+
+4. **Split**  
+   **Household hold-out**: entire homes are excluded from training so that performance reflects generalization to unseen residences. Random seed is fixed for reproducibility.
+
+5. **Models**  
+   - Persistence baseline (predict last observed value)  
+   - Linear Regression and Ridge  
+   - LightGBM (with early stopping)  
+   - XGBoost  
+
+6. **Evaluation**  
+   MAE, RMSE, and R² on the held-out households. Additional diagnostics include concentration-stratified error, feature importance, and observed-vs-predicted plots.
 
 You do **not** need to run any code simply to read the results. Open the research highlight and any committed figures.
 
@@ -81,24 +115,38 @@ You do **not** need to run any code simply to read the results. Open the researc
 
 Exact counts appear in the executed notebook and research highlight.
 
+---
+
 ## 📊 Results
 
 Detailed metrics, capping comparisons, and interpretation are in **[`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md)**.
 
-Typical pattern observed:
+### Numerical outputs (`results/`)
+
+| File | Content |
+|---|---|
+| `model_comparison.csv` | MAE / RMSE / R² for all models |
+| `holdout_predictions.csv` | Predictions on held-out households |
+| `holdout_household_mae_differences.csv` | Per-household error differences |
+| `run_manifest.json` | Run metadata (split, features, seed, etc.) |
+
+### Typical pattern observed
+
 - Persistence is a strong baseline at 10-minute resolution because of high temporal autocorrelation.
 - Gradient-boosted models (especially LightGBM) often improve RMSE and R² relative to linear models.
 - Capping extreme spikes reduces the influence of rare high-PM events; the fraction of points altered is small (see highlight for exact percentages).
 
-### Example figures (if present in `assets/figures/` or `plots/`)
+### Figures (repository root)
 
 | Figure | Description |
 |---|---|
-| Model comparison | Held-out MAE / RMSE across models |
-| Errors by concentration | Performance stratified by observed PM level |
-| Temporal autocorrelation | Strength of dependence at different lags |
-| Feature importance | LightGBM / XGBoost top predictors |
-| Correlation heatmap | Relationships among selected features |
+| `pm25_preprocessing_examples.png` | Concentration capping and minimum data coverage |
+| `pearson_correlation.png` | Feature and target correlation heatmap |
+| `test_rmse_grouped_bar_chart.png` | Held-out RMSE across models |
+| `xgboost_observed_vs_predicted.png` | Observed vs predicted scatter |
+| `concentration_stratified_mae.png` | Performance by PM concentration level |
+| `feature_ablation_rmse_all_features.png` | Feature ablation (all features) |
+| `feature_ablation_rmse_top_3.png` | Feature ablation (top 3) |
 
 ---
 
@@ -106,11 +154,9 @@ Typical pattern observed:
 
 ### 1. Obtain the repository
 
-Use GitHub Desktop to clone, or:
-
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/CHE1147-Indoor-PM25-Forecasting.git
-cd CHE1147-Indoor-PM25-Forecasting
+git clone https://github.com/realfrankli/CHE1147-Indoor-PM25-Forecasting_Team4.git
+cd CHE1147-Indoor-PM25-Forecasting_Team4
 ```
 
 ### 2. Install dependencies
@@ -138,6 +184,7 @@ To read results only, skip this step and open `RESEARCH_HIGHLIGHT.md`.
 - Household hold-out is used so performance reflects generalization to unseen homes.
 - Extreme indoor PM values can be capped (thresholds and percentages of clipped observations are documented in the research highlight).
 - Persistence is included as a simple, strong baseline.
+- Feature correlations and temporal autocorrelation are documented in the notebook and figures; high autocorrelation makes short-term prediction easier but also raises the bar for any model that claims improvement over persistence.
 
 More details: [`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md) · [`decisions.md`](decisions.md).
 
@@ -150,6 +197,8 @@ More details: [`RESEARCH_HIGHLIGHT.md`](RESEARCH_HIGHLIGHT.md) · [`decisions.md
 CHE1147 — Chemical Data Science and Engineering, University of Toronto  
 Course instructor: Seyed Mohamad Moosavi
 
+---
+
 ## 📚 References
 
 - [Singer et al. (2020), *Indoor air quality in California homes with code-required mechanical ventilation*](https://doi.org/10.1111/ina.12676)
@@ -157,6 +206,8 @@ Course instructor: Seyed Mohamad Moosavi
 - [Ke et al. (2017), LightGBM](https://papers.neurips.cc/paper/2017/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html)
 - [Chen & Guestrin (2016), XGBoost](https://doi.org/10.1145/2939672.2939785)
 - [CHE1147 course repository](https://github.com/AI4ChemS/CHE1147)
+
+---
 
 ## 💬 Thank you!
 
